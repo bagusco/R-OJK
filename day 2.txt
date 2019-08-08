@@ -1,0 +1,27 @@
+#require(quantmod)
+library(quantmod)
+getSymbols("^FTSE")
+ftrt = diff(log(Cl(FTSE)))
+plot(ftrt)
+ft <- as.numeric(ftrt)
+ft <- ft[!is.na(ft)]
+ftfinal.aic <- Inf
+ftfinal.order <- c(0,0,0)
+for (p in 1:4) for (d in 0:1) for (q in 1:4) {
+   ftcurrent.aic <- AIC(arima(ft, order=c(p, d, q)))
+   if (ftcurrent.aic < ftfinal.aic) {
+         ftfinal.aic <- ftcurrent.aic
+         ftfinal.order <- c(p, d, q)
+         ftfinal.arima <- arima(ft, order=ftfinal.order)
+       }
+}
+ftfinal.order
+summary(ftfinal.arima)
+acf(resid(ftfinal.arima))
+acf(resid(ftfinal.arima)^2)
+library(tseries)
+ft.garch <- garch(ft, trace=F)
+ft.res <- ft.garch$res[-1]
+summary(ft.garch)
+acf(ft.res)
+acf(ft.res^2)
